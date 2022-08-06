@@ -1,20 +1,15 @@
 /*
  * WebSocketClientSocketIO.ino
  *
- *  Created on: 06.06.2016
  *
  */
 
 #include <Arduino.h>
-
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
-
 #include <ArduinoJson.h>
-
 #include <WebSocketsClient.h>
 #include <SocketIOclient.h>
-
 #include <Hash.h>
 
 ESP8266WiFiMulti WiFiMulti;
@@ -24,6 +19,7 @@ SocketIOclient socketIO;
 
 bool led_status = false;
 uint8_t * payload;
+String inData;
 
 //uint8_t * is shorthand for a type of unsigned integer of length 8 bits
 
@@ -42,10 +38,22 @@ String type_name(const T&)
     return s.substring(start, stop);
 }
 
+void doShit(uint8_t * theSamePayloadBra, size_t length) { 
+  Serial.println("SHIT HAPPENED");
+//  for (int i = 0; i < length; i++) {
+//        Serial.println((char)theSamePayloadBra[i]);
+//        Serial.println(".........................THE MESSAGE................................");
+//  }
+
+  USE_SERIAL.println("-----");
+  USE_SERIAL.printf("payloadVal: ", theSamePayloadBra[0]);
+  USE_SERIAL.println(" ");
+}
+
 void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, size_t length) {
-    USE_SERIAL.println("INCOMING type----");
-    USE_SERIAL.println(type);
-    USE_SERIAL.println("INCOMING type----");
+    USE_SERIAL.println("INCOMING payload----");
+    USE_SERIAL.printf("payload: ", payload);
+    USE_SERIAL.println("INCOMING payload----");
     switch(type) {
         case sIOtype_DISCONNECT:
             USE_SERIAL.printf("[IOc] Disconnected!\n");
@@ -57,6 +65,7 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, size_t length)
             break;
         case sIOtype_EVENT:
             USE_SERIAL.printf("[IOc] get event: %s\n", payload);
+            doShit(payload, length);
             break;
         case sIOtype_ACK:
             USE_SERIAL.printf("[IOc] get ack: %u\n", length);
@@ -152,5 +161,6 @@ void loop() {
 
         // Print JSON for debugging
         USE_SERIAL.println(output);
+        USE_SERIAL.printf("JSON OUTPUT:---",output);
     }
 }
