@@ -60,7 +60,16 @@ io.on("connection", (socket) => {
   })
 
   socket.on('toggle_led', (data) => {
-    socket.broadcast.emit('led_status', data);
+    socket.broadcast.emit("led_status", data);
+  });
+
+  socket.on('event_name', (data) => {
+    console.log("ESP32 DATA: ", data);
+    socket.broadcast.emit("ESP32_DATA", data);
+  });
+
+  socket.on('toggle_led_value', (data) => {
+    console.log("LED VALUE: ", data);
   });
 });
 

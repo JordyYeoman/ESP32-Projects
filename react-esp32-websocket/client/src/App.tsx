@@ -3,6 +3,10 @@ import {io} from 'socket.io-client';
 import { useEffect, useState } from 'react';
 import { json } from 'stream/consumers';
 
+
+// NOTE: All messages on the websocket should be passed as an object 
+// EG - { message: x } , otherwise the microcontroller will not be able to handle the incoming message
+
 function App() {
   const socket = io('http://localhost:7700');
   const sendMessage = (msg: any) => {
@@ -12,7 +16,7 @@ function App() {
     socket.emit('get_some', { message: msg});
   }
   const toggleLed = (val: boolean) => {
-    socket.emit('toggle_led', val);
+    socket.emit('toggle_led', { message: `${val}`});
   }
 
   useEffect(() => {
@@ -25,6 +29,9 @@ function App() {
     socket.on('led_status', (data: any) => {
       console.log("LED STATUS: ", data);
     })
+    socket.on('ESP32_DATA', (data: any) => {
+      console.log("ESP32_DATA: ", data)
+    });
   },[socket]);
 
   return (
@@ -41,12 +48,19 @@ export default App;
 
 
 const ToggleLedButton = ({action}: {action: Function}) => {
-  const [ledStatus, setLedStatus] = useState<boolean>(false);
+  const [ledStatus, setLedStatus] = useState<string>('off');
   return <>
     <div>Led Status: {JSON.stringify(ledStatus)}</div>
     <button onClick={()=> {
-      setLedStatus(!ledStatus);
-      action(!ledStatus)}
+      console.log("LED STATUS: ", ledStatus);
+      if(ledStatus === 'off') {
+        action('on')  
+        setLedStatus('on');
+      }  else {
+        action('off');
+        setLedStatus('off');
+      }
+      }
       }>Toggle LED</button>
   </>
 }

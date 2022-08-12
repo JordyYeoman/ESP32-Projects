@@ -1,8 +1,3 @@
-/*
- * WebSocketClientSocketIO.ino
- *
- *
- */
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -12,42 +7,73 @@
 #include <SocketIOclient.h>
 #include <Hash.h>
 
+#include <iostream>
+#include <string>
+
 ESP8266WiFiMulti WiFiMulti;
 SocketIOclient socketIO;
 
 #define USE_SERIAL Serial
+#define analogPin A0 
 
 bool led_status = false;
 uint8_t * payload;
 String inData;
+bool endOfMsg;
+int messageCharIndex;
+int analogInputVal = 0;
 
-//uint8_t * is shorthand for a type of unsigned integer of length 8 bits
+void broadcastMessage(String msg) {
+    // create JSON message for Socket.IO (event)
+    DynamicJsonDocument doc(1024);
+    JsonArray array = doc.to<JsonArray>();
 
-void testCode(uint8_t * somethingPayload) {
-     Serial.println("PAYLOAD RECIEVED, Running test code: ");
-     USE_SERIAL.printf("somethingPayload: ", somethingPayload);
-//     Serial.println(payload.led_status)
-  }
+    // add event name
+    // Hint: socket.on('event_name', ....
+    array.add("toggle_led_value");
 
-template <class T>
-String type_name(const T&)
-{
-    String s = __PRETTY_FUNCTION__;
-    int start = s.indexOf("[with T = ") + 10;
-    int stop = s.lastIndexOf(']');
-    return s.substring(start, stop);
+    // add payload (parameters) for the event
+    JsonObject param = array.createNestedObject();
+    param["led_value"] = msg;
+
+    // JSON to String (serializion)
+    String output;
+    serializeJson(doc, output);
+    Serial.println("Sending MSG");
+    Serial.println(output);
+    Serial.println("Sending MSG");
+    // Send event
+    socketIO.sendEVENT(output);
 }
 
-void doShit(uint8_t * theSamePayloadBra, size_t length) { 
-  Serial.println("SHIT HAPPENED");
-//  for (int i = 0; i < length; i++) {
-//        Serial.println((char)theSamePayloadBra[i]);
-//        Serial.println(".........................THE MESSAGE................................");
-//  }
+void doShit(uint8_t * theSamePayloadBra, size_t length) {
+  String message; 
+  int msgCharIndex;
 
-  USE_SERIAL.println("-----");
-  USE_SERIAL.printf("payloadVal: ", theSamePayloadBra[0]);
-  USE_SERIAL.println(" ");
+ for(int i = 0; i <= length; i++) {
+      if((char)theSamePayloadBra[i] == ':' && i != msgCharIndex) {
+          msgCharIndex = i + 2; continue; // Plus 2 since the message is ' :"testMsg" '
+      }
+      if(i == msgCharIndex) {
+          char Ltr = (char)theSamePayloadBra[i];
+          if(Ltr == '\"') break;
+          message += Ltr;
+          msgCharIndex += 1;
+      }
+  }
+  Serial.println(" ");
+  Serial.println("---MESSAGE---");
+  Serial.println(message);
+  Serial.println("---MESSAGE---");
+  if(message == "on"){
+      // Turn onboard led on
+      digitalWrite(2, HIGH);
+      broadcastMessage(message);
+      
+  } else {
+      // Turn onboard led on
+      digitalWrite(2, LOW);
+  }
 }
 
 void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, size_t length) {
@@ -64,7 +90,7 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, size_t length)
             socketIO.send(sIOtype_CONNECT, "/");
             break;
         case sIOtype_EVENT:
-            USE_SERIAL.printf("[IOc] get event: %s\n", payload);
+//            USE_SERIAL.printf("[IOc] get event: %s\n", payload);
             doShit(payload, length);
             break;
         case sIOtype_ACK:
@@ -131,13 +157,10 @@ void setup() {
 unsigned long messageTimestamp = 0;
 void loop() {
     socketIO.loop();
-
+    
     uint64_t now = millis();
 
-    // Turn onboard led on
-    digitalWrite(2, HIGH);
-
-    if(now - messageTimestamp > 2000) {
+    if(now - messageTimestamp > 100) {
         messageTimestamp = now;
 
         // creat JSON message for Socket.IO (event)
@@ -147,10 +170,12 @@ void loop() {
         // add event name
         // Hint: socket.on('event_name', ....
         array.add("event_name");
+        // Read in analog input
+        analogInputVal = analogRead(analogPin);
 
         // add payload (parameters) for the event
         JsonObject param1 = array.createNestedObject();
-        param1["now"] = (uint32_t) now;
+        param1["now"] = (uint32_t) analogInputVal;
 
         // JSON to String (serializion)
         String output;
