@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const http = require("http");
 const cors = require("cors");
-const { networkInterfaces } = require('os');
+const { networkInterfaces } = require("os");
 const { Server } = require("socket.io");
 app.use(cors());
 
@@ -11,17 +11,17 @@ const nets = networkInterfaces();
 const results = Object.create(null); // Or just '{}', an empty object
 
 for (const name of Object.keys(nets)) {
-    for (const net of nets[name]) {
-        // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
-        // 'IPv4' is in Node <= 17, from 18 it's a number 4 or 6
-        const familyV4Value = typeof net.family === 'string' ? 'IPv4' : 4
-        if (net.family === familyV4Value && !net.internal) {
-            if (!results[name]) {
-                results[name] = [];
-            }
-            results[name].push(net.address);
-        }
+  for (const net of nets[name]) {
+    // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+    // 'IPv4' is in Node <= 17, from 18 it's a number 4 or 6
+    const familyV4Value = typeof net.family === "string" ? "IPv4" : 4;
+    if (net.family === familyV4Value && !net.internal) {
+      if (!results[name]) {
+        results[name] = [];
+      }
+      results[name].push(net.address);
     }
+  }
 }
 // Used to get ip address of express server and pass onto socketio client on esp32
 console.log("RESULTS: ", results);
@@ -57,22 +57,24 @@ io.on("connection", (socket) => {
 
   socket.on("get_some", (data) => {
     socket.broadcast.emit("go_get_some", data);
-  })
+  });
 
-  socket.on('toggle_led', (data) => {
+  socket.on("toggle_led", (data) => {
     socket.broadcast.emit("led_status", data);
   });
 
-  socket.on('event_name', (data) => {
+  socket.on("event", (data) => {
     console.log("ESP32 DATA: ", data);
     socket.broadcast.emit("ESP32_DATA", data);
   });
 
-  socket.on('toggle_led_value', (data) => {
+  socket.on("toggle_led_value", (data) => {
     console.log("LED VALUE: ", data);
   });
 });
 
 server.listen(PORT, () => {
-  console.log("⚡ Good Morning Sir, we are currently listening on PORT: " + PORT);
+  console.log(
+    "⚡ Good Morning Sir, we are currently listening on PORT: " + PORT
+  );
 });
