@@ -77,9 +77,6 @@ void doShit(uint8_t * theSamePayloadBra, size_t length) {
 }
 
 void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, size_t length) {
-    USE_SERIAL.println("INCOMING payload----");
-    USE_SERIAL.printf("payload: ", payload);
-    USE_SERIAL.println("INCOMING payload----");
     switch(type) {
         case sIOtype_DISCONNECT:
             USE_SERIAL.printf("[IOc] Disconnected!\n");
@@ -90,7 +87,6 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, size_t length)
             socketIO.send(sIOtype_CONNECT, "/");
             break;
         case sIOtype_EVENT:
-//            USE_SERIAL.printf("[IOc] get event: %s\n", payload);
             doShit(payload, length);
             break;
         case sIOtype_ACK:
@@ -113,28 +109,25 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, size_t length)
 }
 
 void setup() {
-    // USE_SERIAL.begin(921600);
     USE_SERIAL.begin(115200);
-
-    //Serial.setDebugOutput(true);
-    USE_SERIAL.setDebugOutput(true);
+//    USE_SERIAL.setDebugOutput(true);
 
     USE_SERIAL.println();
     USE_SERIAL.println();
     USE_SERIAL.println();
 
-      for(uint8_t t = 4; t > 0; t--) {
-          USE_SERIAL.printf("[SETUP] BOOT WAIT %d...\n", t);
-          USE_SERIAL.flush();
-          delay(1000);
-      }
+    for(uint8_t t = 4; t > 0; t--) {
+        USE_SERIAL.printf("[SETUP] BOOT WAIT %d...\n", t);
+        USE_SERIAL.flush();
+        delay(1000);
+    }
 
     // disable AP
     if(WiFi.getMode() & WIFI_AP) {
         WiFi.softAPdisconnect(true);
     }
 
-    WiFiMulti.addAP("NOVA_F518", "room8447");
+    WiFiMulti.addAP("NOVA_F518", "room8455");
 
     //WiFi.disconnect();
     while(WiFiMulti.run() != WL_CONNECTED) {
@@ -145,7 +138,6 @@ void setup() {
     USE_SERIAL.printf("[SETUP] WiFi Connected %s\n", ip.c_str());
 
     // server address, port and URL
-//    socketIO.begin("10.11.100.100", 8880, "/socket.io/?EIO=4");
     socketIO.begin("192.168.5.59", 7700, "/socket.io/?EIO=4");
 
     // event handler
