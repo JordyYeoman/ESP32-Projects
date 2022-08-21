@@ -127,7 +127,7 @@ void setup() {
         WiFi.softAPdisconnect(true);
     }
 
-    WiFiMulti.addAP("NOVA_F518", "room8455");
+    WiFiMulti.addAP("NOVA_F518", "room8447");
 
     //WiFi.disconnect();
     while(WiFiMulti.run() != WL_CONNECTED) {
@@ -152,7 +152,7 @@ void loop() {
     
     uint64_t now = millis();
 
-    if(now - messageTimestamp > 100) {
+    if(now - messageTimestamp > 50) {
         messageTimestamp = now;
 
         // creat JSON message for Socket.IO (event)
@@ -161,13 +161,14 @@ void loop() {
 
         // add event name
         // Hint: socket.on('event_name', ....
-        array.add("event_name");
+        array.add("event");
         // Read in analog input
         analogInputVal = analogRead(analogPin);
 
         // add payload (parameters) for the event
         JsonObject param1 = array.createNestedObject();
-        param1["now"] = (uint32_t) analogInputVal;
+        param1["mv"] = (uint32_t) analogInputVal;
+        param1["now"] = (uint32_t) now;
 
         // JSON to String (serializion)
         String output;
@@ -175,6 +176,9 @@ void loop() {
 
         // Send event
         socketIO.sendEVENT(output);
+
+        // Testing ECG signal
+        Serial.println(analogInputVal);
 
         // Print JSON for debugging
         USE_SERIAL.println(output);
