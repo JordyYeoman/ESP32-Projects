@@ -6,6 +6,8 @@
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
+#define ONBOARD_LED  2
+
 class MyCallbacks: public BLECharacteristicCallbacks
 {
   void onWrite(BLECharacteristic *pCharacteristic, esp_ble_gatts_cb_param_t* param)
@@ -23,12 +25,23 @@ class MyCallbacks: public BLECharacteristicCallbacks
     }
     Serial.println("MESSAGE: ");
     Serial.print(message);
+    if(message == "on") {
+      // Turn onboard led on
+      digitalWrite(2, HIGH);
+      Serial.println("LED ON");
+    } else {
+      // Turn onboard led off
+      digitalWrite(2, LOW);
+      Serial.println("LED OFF");
+    }
   }
 };
 
 // NOTE: - Be sure to use the correct app when communicating, BLE Scanner works well for sending strings/hex messages without chunking the data.
 void setup()
 {
+  // On board led
+  pinMode(ONBOARD_LED, OUTPUT);
   Serial.begin(115200);
 
   Serial.println("1- Download and install an BLE scanner app in your phone");
@@ -59,4 +72,8 @@ void setup()
 void loop()
 {
   delay(3);
+  delay(1000);
+  digitalWrite(ONBOARD_LED,HIGH);
+  delay(100);
+  digitalWrite(ONBOARD_LED,LOW);
 }
