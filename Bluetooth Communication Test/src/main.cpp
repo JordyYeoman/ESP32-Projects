@@ -6,7 +6,9 @@
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
-#define ONBOARD_LED  2
+int ONBOARD_LED = 2;
+boolean MONITOR_ECG = false;
+BLECharacteristic *pCharacteristic; // Pointing to the address of where our characteristic value is located.
 
 class MyCallbacks: public BLECharacteristicCallbacks
 {
@@ -14,7 +16,7 @@ class MyCallbacks: public BLECharacteristicCallbacks
   {
     std::string value = pCharacteristic->getValue();
     String message;
-    
+
     if (value.length() > 0)
     {
       for (int i = 0; i < value.length(); i++)
@@ -29,10 +31,16 @@ class MyCallbacks: public BLECharacteristicCallbacks
       // Turn onboard led on
       digitalWrite(2, HIGH);
       Serial.println("LED ON");
-    } else {
+    } 
+    if(message == "off") {
       // Turn onboard led off
       digitalWrite(2, LOW);
-      Serial.println("LED OFF");
+      MONITOR_ECG = false;
+      Serial.println("Systems offline");
+    }
+    if(message == "system online") {
+      MONITOR_ECG = true;
+      Serial.print("Systems online and ready sir");
     }
   }
 };
@@ -44,21 +52,17 @@ void setup()
   pinMode(ONBOARD_LED, OUTPUT);
   Serial.begin(115200);
 
-  Serial.println("1- Download and install an BLE scanner app in your phone");
-  Serial.println("2- Scan for BLE devices in the app");
-  Serial.println("3- Connect to ESP32-BLE_Server");
-  Serial.println("4- Go to CUSTOM CHARACTERISTIC in CUSTOM SERVICE and write something");
-
   BLEDevice::init("ESP32-BLE-Server");
+
+  // Define these values outside of setup to give global access
   BLEServer *pServer = BLEDevice::createServer();
-
   BLEService *pService = pServer->createService(SERVICE_UUID);
-
-  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
-                                         CHARACTERISTIC_UUID,
-                                         BLECharacteristic::PROPERTY_READ |
-                                         BLECharacteristic::PROPERTY_WRITE
-                                       );
+  pCharacteristic = pService->createCharacteristic(
+                                          CHARACTERISTIC_UUID,
+                                          BLECharacteristic::PROPERTY_READ |
+                                          BLECharacteristic::PROPERTY_WRITE |
+                                          BLECharacteristic::PROPERTY_NOTIFY
+                                        );
 
   pCharacteristic->setCallbacks(new MyCallbacks());
 
@@ -71,9 +75,12 @@ void setup()
 
 void loop()
 {
-  delay(3);
-  delay(1000);
-  digitalWrite(ONBOARD_LED,HIGH);
-  delay(100);
-  digitalWrite(ONBOARD_LED,LOW);
+  delay(20);
+  // if(MONITOR_ECG) {
+    // Batch 'x' amount of responses and then post the average over bluetooth.
+    int randomNumber = rand() % 100;
+    pCharacteristic->setValue(randomNumber);
+    pCharacteristic->notify();
+    Serial.println(randomNumber);
+  // }
 }
