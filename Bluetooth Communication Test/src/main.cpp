@@ -53,6 +53,7 @@ void setup()
   Serial.begin(115200);
 
   BLEDevice::init("ESP32-BLE-Server");
+  
 
   // Define these values outside of setup to give global access
   BLEServer *pServer = BLEDevice::createServer();
