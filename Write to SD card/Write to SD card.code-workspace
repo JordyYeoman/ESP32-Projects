@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "Write to SD card",
+			"path": "."
+		},
+		{
+			"name": "esp32-projects",
+			"path": ".."
+		},
+		{
+			"name": "Bluetooth Communication Test",
+			"path": "../Bluetooth Communication Test"
+		}
+	],
+	"settings": {}
+}
