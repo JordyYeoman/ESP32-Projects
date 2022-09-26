@@ -152,22 +152,6 @@
 //   file.close();
 // }
 
-// void appendFile(fs::FS &fs, const char * path, const char * message){
-//   Serial.printf("Appending to file: %s\n", path);
-
-//   File file = fs.open(path, FILE_APPEND);
-//   if(!file){
-//     Serial.println("Failed to open file for appending");
-//     return;
-//   }
-//   if(file.print(message)){
-//       Serial.println("Message appended");
-//   } else {
-//     Serial.println("Append failed");
-//   }
-//   file.close();
-// }
-
 // void renameFile(fs::FS &fs, const char * path1, const char * path2){
 //   Serial.printf("Renaming file %s to %s\n", path1, path2);
 //   if (fs.rename(path1, path2)) {
@@ -312,11 +296,11 @@ void loop() {
   // Add basic program to show esp32 still functioning correctly
   digitalWrite(LED_BUILTIN, HIGH);
   Serial.println("LED PULLED HIGH");
-  File testFile = SD.open("/SDTest.txt", FILE_WRITE);
+  File testFile = SD.open("/SDTesting.txt", FILE_APPEND);
   if(testFile) {
     Serial.println("");
     testFile.println("");
-    for(int i = 0; i < 10000; i++) {
+    for(int i = 0; i < 1000; i++) {
         testFile.print(i);
         testFile.print(',');
         Serial.print(i);

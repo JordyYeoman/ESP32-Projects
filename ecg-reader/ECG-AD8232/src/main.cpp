@@ -5,9 +5,9 @@
 int ecg_analog_pin = 34;
 int ecg_lo_pos = 26;
 int ecg_lo_neg = 27;
-int arraySize = 10; // Should be the number passed to the array below length
+int arraySize = 3; // Should be the number passed to the array below length
 int currentLoopIndex = 0;
-int firstPass[10] = {}; // 10 seems to be a good average of filtering to help with noise when plugged into mains
+int firstPass[3] = {}; // 10 seems to be a good average of filtering to help with noise
 
 void setup() {
   // initialize the serial communication:

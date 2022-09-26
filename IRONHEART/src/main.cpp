@@ -43,8 +43,8 @@ void setup() {
   pinMode (LED_BUILTIN, OUTPUT);
   pinMode(26, INPUT); // Setup for leads off detection LO +
   pinMode(27, INPUT); // Setup for leads off detection LO -
-  Serial.begin(9600);
-  // Serial.begin(115200);
+  // Serial.begin(9600);
+  Serial.begin(115200);
   while (!Serial) { }
 
   // Check the module is connected
@@ -78,7 +78,7 @@ void loop() {
   int newInput = analogRead(ecg_analog_pin);
   assignNewDataPoint(newInput);
 
-  File testFile = SD.open("/IRONHEART_BETA.txt", FILE_WRITE);
+  File testFile = SD.open("/IRONHEART_BETA.txt", FILE_APPEND);
   if(testFile) {
     if(loopCount > 100) {
       loopCount = 0;
