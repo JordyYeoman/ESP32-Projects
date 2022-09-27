@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <SD.h>
+#include <vector>
 
 /** The clock select pin for the SD card module */
 int CS_PIN = 5;
@@ -9,37 +10,11 @@ int LED_BUILTIN = 2;
 int ecg_analog_pin = 34;
 int ecg_lo_pos = 26;
 int ecg_lo_neg = 27;
-int arraySize = 3; // Should be the number passed to the array below length
-int currentLoopIndex = 0;
-int firstPass[3] = {}; // 10 seems to be a good average of filtering to help with noise
-int currentAvg = 1;
 int loopCount;
-
-// Helper methods: 
-void assignNewDataPoint(int input) {
-  // Check if last element in array has been assigned
-  if(firstPass[currentLoopIndex] == 0 && currentLoopIndex < arraySize) {
-    firstPass[currentLoopIndex] = input;
-    currentLoopIndex++;
-  } else if (firstPass[arraySize - 1] != 0) {
-    // If both first and last elements have been assigned, get the average and print it out
-    int sum;
-    for(int z = 0; z < sizeof(firstPass)/sizeof(firstPass[0]); z++) {
-        sum += firstPass[z];
-    }
-    int localAvg = sum / arraySize;
-    currentAvg = localAvg;
-    // std::cout << "AVERAGE: " << localAvg << std::endl;
-    Serial.println(localAvg);
-    // Then clean the array
-    std::fill_n(firstPass, arraySize, 0);
-    if(currentLoopIndex == arraySize) {
-      currentLoopIndex = 0;
-    }
-  }
-};
+std::vector<std::string> data{};
 
 void setup() {
+  Serial.println("Systems Booting...");
   pinMode (LED_BUILTIN, OUTPUT);
   pinMode(26, INPUT); // Setup for leads off detection LO +
   pinMode(27, INPUT); // Setup for leads off detection LO -
@@ -53,11 +28,10 @@ void setup() {
     return;
   }
 
-  File testFile = SD.open("/SDTest.txt", FILE_WRITE);
+  File testFile = SD.open("/BootTest.txt", FILE_WRITE);
   if (testFile) {
     testFile.println("Hello ESP32 SD");
-    testFile.println("No way you cheeky dawg");
-    testFile.println("Absolutely send this shit");
+    testFile.println("No way you cheeky dawg, absolutely send it!");
     testFile.close();
     Serial.println("Success, data written to SDTest.txt");
   } else {
@@ -68,31 +42,34 @@ void setup() {
 void loop() {
   // Add basic program to show esp32 still functioning correctly
   digitalWrite(LED_BUILTIN, HIGH);
-  // Serial.println("LED PULLED HIGH");
 
+  // Don't write to SD card if ECG leds are not pulling signal.
   if((digitalRead(ecg_lo_pos) == 1)||(digitalRead(ecg_lo_neg) == 1)){
     Serial.println('!');
     return;
   }
+
   // Batch data 
   int newInput = analogRead(ecg_analog_pin);
-  assignNewDataPoint(newInput);
-
-  File testFile = SD.open("/IRONHEART_BETA.txt", FILE_APPEND);
-  if(testFile) {
-    if(loopCount > 100) {
-      loopCount = 0;
-      testFile.println("");
-      Serial.println("");
+  std::string str = std::to_string(newInput) + ",";
+  data.push_back(str);
+  if(data.size() >= 100) {
+    File testFile = SD.open("/IRONHEART_BETA.txt", FILE_APPEND);
+    if(testFile) {
+      if(loopCount > 100) {
+        loopCount = 0;
+        testFile.println("");
+        Serial.println("");
+      }
+      for(int k = 0; k < data.size(); k++) {
+        Serial.print(data[k].c_str());
+        testFile.print(data[k].c_str());
+      }
+      testFile.close();
     }
-    Serial.print(currentAvg);
-    Serial.print(',');
-    testFile.print(currentAvg);
-    testFile.print(',');
-    testFile.close();
+    data.clear();
   }
   digitalWrite(LED_BUILTIN, LOW);
-  // Serial.println("LED PULLED LOW");
   loopCount++;
   delay(5);
 }
