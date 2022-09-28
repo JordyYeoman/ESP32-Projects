@@ -71,5 +71,5 @@ void loop() {
   }
   digitalWrite(LED_BUILTIN, LOW);
   loopCount++;
-  delay(5);
+  delay(1);
 }
