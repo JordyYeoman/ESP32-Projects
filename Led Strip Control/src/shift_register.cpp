@@ -22,21 +22,21 @@ void shiftDisplay(byte data)
 
 void loop()
 {
-    byte x = B00000001; // 1 Byte AKA 8 bits of data
-    // 'B' tells arduino that we are writing a number in binary
+    byte x = B10000000; // 1 Byte AKA 8 bits of data, 1 for on and 0 for off.
+                        // 'B' tells arduino that we are writing a number in binary
+    // Loop Forward
     for (int i = 0; i < 8; i++)
     {
-        if (i == 7)
-        {
-            for (int k = 0; k < 8; k++)
-            {
-                shiftDisplay(x);
-                x = x >> 1;
-                delay(200);
-            }
-        }
+        Serial.println("");
         shiftDisplay(x);
-        x = x << 1; // Secret sauce to shift all bits to the right, moving our 1 bit by 1 to the right.
+        x = x >> 1; // Secret sauce to shift all bits to the right, moving our 1 bit by 1 to the right.
+        delay(200);
+    }
+    // Loop Backward
+    for (int k = 0; k < 8; k++)
+    {
+        shiftDisplay(x);
+        x = x << 1;
         delay(200);
     }
 }
