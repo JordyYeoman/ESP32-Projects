@@ -20,5 +20,5 @@ void loop() {
 
   // Serial.println("LED OFF");
   digitalWrite(2, LOW);
-  delay(25);
+  delay(10);
 }

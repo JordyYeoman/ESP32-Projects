@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../Led Strip Control"
+		},
+		{
+			"name": "Servo Motor Control",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}
