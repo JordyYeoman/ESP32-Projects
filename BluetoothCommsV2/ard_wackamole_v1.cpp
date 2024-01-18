@@ -15,8 +15,36 @@ int total_leds = 5;
 int button_tolerance = 20; // How much +/- value to accept for button resistance when pressed.
 bool hasPressedPreviousButton = false;
 
+//
+int tDelay = 500;
+int latchPin = 11; // (11) ST_CP [RCK] on 74HC595
+int clockPin = 9;  // (9) SH_CP [SCK] on 74HC595
+int dataPin = 12;  // (12) DS [S1] on 74HC595
+
+byte leds = 0;
+// this first function to turn them off, from right to left (least significant)
+void updateShiftRegister()
+{
+    digitalWrite(latchPin, LOW);
+    shiftOut(dataPin, clockPin, LSBFIRST, leds); // LSBFIRST starts from the least significant Byte, that corresponds to 8th pinout
+    digitalWrite(latchPin, HIGH);
+}
+// this second function is to turn them off
+void updateShiftRegister2()
+{
+    digitalWrite(latchPin, HIGH);
+    shiftOut(dataPin, clockPin, LSBFIRST, leds); // if we start with MSBFIRST in this function, then it would start from the most significant, that is the 1st pinout.
+    digitalWrite(latchPin, LOW);
+}
+
 void setup()
 {
+    //
+    pinMode(latchPin, OUTPUT);
+    pinMode(dataPin, OUTPUT);
+    pinMode(clockPin, OUTPUT);
+    Serial.begin(9600);
+    //
     pinMode(LED_BUILTIN, OUTPUT);
     // Board Leds
     pinMode(7, OUTPUT); // LED 1,
@@ -59,5 +87,23 @@ void loop()
             digitalWrite(led_pin_map[i], LOW);
             hasPressedPreviousButton = true;
         }
+    }
+
+    //
+    leds = 0;
+    updateShiftRegister();
+    for (int i = 0; i < 8; i++)
+    {
+        delay(tDelay);
+        bitSet(leds, i); // bitset sets the byte of each led to on
+        updateShiftRegister();
+    }
+    //
+    for (int i = 0; i < 8; i++)
+    {
+
+        bitClear(leds, i); // bitclear sets the byte of each led to off
+        updateShiftRegister2();
+        delay(tDelay);
     }
 }
