@@ -39,7 +39,7 @@ void updateShiftRegister2()
 
 void setup()
 {
-    //
+    // Try not to cook the shift register plz
     pinMode(latchPin, OUTPUT);
     pinMode(dataPin, OUTPUT);
     pinMode(clockPin, OUTPUT);
