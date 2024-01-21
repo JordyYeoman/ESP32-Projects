@@ -1,4 +1,3 @@
-int tDelay = 1000;
 int latchPin = 10; // (11) ST_CP [RCK] on 74HC595
 int clockPin = 11; // (9) SH_CP [SCK] on 74HC595
 int dataPin = 9;   // (12) DS [S1] on 74HC595
@@ -38,16 +37,15 @@ void loop()
         randNumber = random(0, numLeds);
         newGame = false;
         hasPreviouslyPressedButton = false;
+        //
+        // Update Hardware Display to user
+        //
+        //
+        // For our binary number, bitSet turns the value ON - which means setting the bit to HIGH.
+        // Eg - bitSet(num, 3); will set the bit at index 3 to HIGH (On).
+        bitSet(binaryNum, randNumber);
+        updateShiftRegisterWithValue(binaryNum);
     }
-
-    //
-    // Update Hardware Display to user
-    //
-    //
-    // For our binary number, bitSet turns the value ON - which means setting the bit to HIGH.
-    // Eg - bitSet(num, 3); will set the bit at index 3 to HIGH (On).
-    bitSet(binaryNum, randNumber);
-    updateShiftRegisterWithValue(binaryNum);
 
     //
     // Handle Button Press
@@ -68,7 +66,8 @@ void loop()
                 // Update score
                 // ...
                 // reset game state to OFF for next LED to light up
-                updateShiftRegisterWithValue(0b00000000);
+                binaryNum = 0b00000000;
+                updateShiftRegisterWithValue(binaryNum);
             }
         }
         j++;
