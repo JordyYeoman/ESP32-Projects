@@ -7,22 +7,12 @@ int button_values[] = {481, 311, 227, 176, 141, 114, 89, 60}; // Pin values read
 int tolerance = 15;
 int numLeds = 8;
 int binaryNum = 0b00000000;
+long randNumber;
 byte leds = 0;
 
-// this first function to turn them off, from right to left (least significant)
-void updateShiftRegister()
-{
-    digitalWrite(latchPin, LOW);
-    shiftOut(dataPin, clockPin, LSBFIRST, leds); // LSBFIRST starts from the least significant Byte, that corresponds to 8th pinout
-    digitalWrite(latchPin, HIGH);
-}
-// this second function is to turn them off
-void updateShiftRegister2()
-{
-    digitalWrite(latchPin, HIGH);
-    shiftOut(dataPin, clockPin, LSBFIRST, leds); // if we start with MSBFIRST in this function, then it would start from the most significant, that is the 1st pinout.
-    digitalWrite(latchPin, LOW);
-}
+// Game State
+bool hasPreviouslyPressedButton = false;
+bool newGame = true;
 
 void updateShiftRegisterWithValue(const uint8_t value)
 {
@@ -36,13 +26,35 @@ void setup()
     pinMode(latchPin, OUTPUT);
     pinMode(dataPin, OUTPUT);
     pinMode(clockPin, OUTPUT);
+    randomSeed(analogRead(A1)); // Take random analog input as seed.
     Serial.begin(9600);
 }
 
 void loop()
 {
+    // update random number, if game started || previously
+    if (newGame || hasPreviouslyPressedButton)
+    {
+        randNumber = random(numLeds);
+        newGame = false;
+        hasPreviouslyPressedButton = false;
+    }
+
+    //
+    // Update Hardware Display to user
+    //
+    //
+    // For our binary number, bitSet turns the value ON - which means setting the bit to HIGH.
+    // Eg - bitSet(num, 3); will set the bit at index 3 to HIGH (On).
+    bitSet(binaryNum, randNumber);
+    updateShiftRegisterWithValue(binaryNum);
+
+    //
+    // Handle Button Press
+    //
     analogPinVal = analogRead(A0); // read the input pin
-    // Find which button was pressed
+                                   // Find which button was pressed
+    unsigned j = 0;                // keep track of index
     for (int i : button_values)
     {
         if (analogPinVal > i - tolerance && analogPinVal < i + tolerance)
@@ -50,14 +62,11 @@ void loop()
             Serial.print("Found button pressed: ");
             Serial.println(i);
             // Set button to OFF & record time
+            if (j == randNumber)
+            {
+                Serial.println("Button matches index");
+            }
         }
+        j++;
     }
-
-    bitSet(binaryNum, 1); // For our binary number, bitSet turns the value ON - which
-    // means setting the bit to HIGH.
-
-    updateShiftRegisterWithValue(binaryNum); // led 0 on, other leds off
-    delay(tDelay);
-    updateShiftRegisterWithValue(binaryNum); // led 2 on, other leds off
-    delay(tDelay);
 }
