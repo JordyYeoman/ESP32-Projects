@@ -35,7 +35,7 @@ void loop()
     // update random number, if game started || previously
     if (newGame || hasPreviouslyPressedButton)
     {
-        randNumber = random(numLeds);
+        randNumber = random(0, numLeds);
         newGame = false;
         hasPreviouslyPressedButton = false;
     }
@@ -57,14 +57,18 @@ void loop()
     unsigned j = 0;                // keep track of index
     for (int i : button_values)
     {
+        Serial.println(j);
+        Serial.println(randNumber);
         if (analogPinVal > i - tolerance && analogPinVal < i + tolerance)
         {
-            Serial.print("Found button pressed: ");
-            Serial.println(i);
             // Set button to OFF & record time
             if (j == randNumber)
             {
-                Serial.println("Button matches index");
+                hasPreviouslyPressedButton = true;
+                // Update score
+                // ...
+                // reset game state to OFF for next LED to light up
+                updateShiftRegisterWithValue(0b00000000);
             }
         }
         j++;
