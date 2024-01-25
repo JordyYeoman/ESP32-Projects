@@ -32,6 +32,14 @@ void setup()
     Serial.begin(9600);
 }
 
+void printBinary(byte inByte)
+{
+    for (int b = 7; b >= 0; b--)
+    {
+        Serial.print(bitRead(inByte, b));
+    }
+}
+
 void loop()
 {
     // update random number, if game started || previously
@@ -48,6 +56,8 @@ void loop()
         // Eg - bitSet(num, 3); will set the bit at index 3 to HIGH (On).
         bitSet(binaryNum, randNumber);
         updateShiftRegisterWithValue(binaryNum);
+        Serial.println();
+        printBinary(binaryNum);
     }
 
     //
@@ -60,8 +70,8 @@ void loop()
     {
         if (analogPinVal > i - tolerance && analogPinVal < i + tolerance)
         {
-            Serial.println("Button Pressed: ");
-            Serial.println(j);
+            // Serial.println("Button Pressed: ");
+            // Serial.println(j);
             // Set button to OFF & record time
             if (j == randNumber)
             {
