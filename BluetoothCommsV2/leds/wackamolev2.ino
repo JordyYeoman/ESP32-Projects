@@ -2,6 +2,11 @@ int latchPin = 10; // (11) ST_CP [RCK] on 74HC595
 int clockPin = 11; // (9) SH_CP [SCK] on 74HC595
 int dataPin = 9;   // (12) DS [S1] on 74HC595
 int totalLedsPerRow = 8;
+int binaryNumShiftRegister1 = 0b00000000;
+int binaryNumShiftRegister2 = 0b00000000;
+int binaryNumShiftRegister3 = 0b00000000;
+int binaryNumShiftRegister4 = 0b00000000;
+int resetBinaryNum = 0b00000000;
 
 void setup()
 {
@@ -58,15 +63,38 @@ void updateShiftRegisters(byte data1, byte data2, byte data3, byte data4)
     digitalWrite(latchPin, LOW);
 }
 
+void shiftRegisterAnimation(int indx, bool shouldReset)
+{
+    // reset binaryNums for shift registers
+    binaryNumShiftRegister1 = resetBinaryNum;
+    binaryNumShiftRegister2 = resetBinaryNum;
+    binaryNumShiftRegister3 = resetBinaryNum;
+    binaryNumShiftRegister4 = resetBinaryNum;
+    // count forward
+    bitSet(binaryNumShiftRegister1, indx);
+    bitSet(binaryNumShiftRegister2, indx);
+    bitSet(binaryNumShiftRegister3, indx);
+    bitSet(binaryNumShiftRegister4, indx);
+    //
+    updateShiftRegisters(binaryNumShiftRegister1, binaryNumShiftRegister2, binaryNumShiftRegister3, binaryNumShiftRegister4);
+    delay(250);
+}
+
 void loop()
 {
     // Loop through from one side to the other of leds
     // NOTE:
     // - row 1 is the final shiftRegister (4) to update.
-    updateShiftRegisters(0b10000000, 0b01000000, 0b10000000, 0b01000000);
-    delay(1000);
-    updateShiftRegisters(0b01000000, 0b10000000, 0b01000000, 0b10000000);
-    delay(1000);
+
+    for (int i = 0; i < 8; i++)
+    {
+        shiftRegisterAnimation(i, i == 8);
+    }
+
+    for (int i = 8; i > 0; i--)
+    {
+        shiftRegisterAnimation(i, i == 8);
+    }
 
     // Example usage: update shift registers with specific data
     // updateShiftRegisters(0b10101010, 0b11001100, 0b11110000, 0b00001111);
