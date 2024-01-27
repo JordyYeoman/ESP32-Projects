@@ -7,6 +7,8 @@ int binaryNumShiftRegister2 = 0b00000000;
 int binaryNumShiftRegister3 = 0b00000000;
 int binaryNumShiftRegister4 = 0b00000000;
 int resetBinaryNum = 0b00000000;
+// Game Logic
+bool newGame = false;
 
 void setup()
 {
@@ -104,10 +106,8 @@ void loopForwardAndBackWard()
 }
 
 // Pass in a reference to the variables in the parent function scope.
-void rowIndexUpdate(const byte &shiftRegister, int &idx, bool &isBackwards)
+void rowIndexUpdate(int &idx, bool &isBackwards)
 {
-    // set the new val
-    bitSet(binaryNumShiftRegister1, idx);
 
     // Check for looping backwards
     if (isBackwards)
@@ -141,30 +141,41 @@ void simpleOffsetStepAnimation()
     int row4Index = 0;
     bool row4Backwards = false;
 
-    for (int i = 0; i < 32; i++)
+    for (int i = 0; i < 33; i++)
     {
+        // Check for user input
+        checkNewGame();
+        if (newGame)
+        {
+            return;
+        }
+
         // reset to all binary nums LOW
         resetBinaryNums();
 
         // start first row animation
-        rowIndexUpdate(binaryNumShiftRegister1, row1Index, row1Backwards);
+        bitSet(binaryNumShiftRegister1, row1Index);
+        rowIndexUpdate(row1Index, row1Backwards);
 
         // start second animation
         if (i > 0)
         {
-            rowIndexUpdate(binaryNumShiftRegister2, row2Index, row2Backwards);
+            bitSet(binaryNumShiftRegister2, row2Index);
+            rowIndexUpdate(row2Index, row2Backwards);
         }
 
         // start third row animation
         if (i > 1)
         {
-            rowIndexUpdate(binaryNumShiftRegister3, row3Index, row3Backwards);
+            bitSet(binaryNumShiftRegister3, row3Index);
+            rowIndexUpdate(row3Index, row3Backwards);
         }
 
         // start fourth row animation
         if (i > 2)
         {
-            rowIndexUpdate(binaryNumShiftRegister4, row4Index, row4Backwards);
+            bitSet(binaryNumShiftRegister4, row4Index);
+            rowIndexUpdate(row4Index, row4Backwards);
         }
 
         updateShiftRegisters(binaryNumShiftRegister1, binaryNumShiftRegister2, binaryNumShiftRegister3, binaryNumShiftRegister4);
@@ -172,17 +183,33 @@ void simpleOffsetStepAnimation()
     }
 }
 
+void checkNewGame()
+{
+    if (analogRead(A0) > 500)
+    {
+        newGame = true;
+        updateShiftRegisters(0b00000000, 0b00000000, 0b00000000, 0b00000000);
+    }
+}
+
 void loop()
 {
-    // Simple animation
-    // loopForwardAndBackWard();
+    // Check game buttons
+    checkNewGame();
 
-    // Simple off timing animation
-    simpleOffsetStepAnimation();
+    if (newGame)
+    {
+        // run game logic
+    }
+    else
+    {
+        // Simple animation
+        // loopForwardAndBackWard();
 
-    // Example usage: update shift registers with specific data
-    // updateShiftRegisters(0b10101010, 0b11001100, 0b11110000, 0b00001111);
+        // Simple off timing animation
+        simpleOffsetStepAnimation();
+        // updateShiftRegisters(0b00000000, 0b00000000, 0b00000000, 0b00000000);
+    }
 
-    // You can modify the data patterns as needed for your application
-    // delay(1000);  // Delay for demonstration purposes
+    delay(1000);
 }
