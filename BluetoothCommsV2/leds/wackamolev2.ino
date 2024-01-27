@@ -14,6 +14,7 @@ void setup()
     pinMode(dataPin, OUTPUT);
     pinMode(clockPin, OUTPUT);
     pinMode(latchPin, OUTPUT);
+    Serial.begin(9600);
 }
 
 // Function to send a byte to the shift register (LSB first)
@@ -65,6 +66,8 @@ void updateShiftRegisters(byte data1, byte data2, byte data3, byte data4)
 
 void shiftRegisterAnimation(int indx, bool shouldReset)
 {
+    Serial.println(indx);
+    Serial.println(shouldReset);
     // reset binaryNums for shift registers
     binaryNumShiftRegister1 = resetBinaryNum;
     binaryNumShiftRegister2 = resetBinaryNum;
@@ -77,23 +80,22 @@ void shiftRegisterAnimation(int indx, bool shouldReset)
     bitSet(binaryNumShiftRegister4, indx);
     //
     updateShiftRegisters(binaryNumShiftRegister1, binaryNumShiftRegister2, binaryNumShiftRegister3, binaryNumShiftRegister4);
-    delay(250);
+    if (!shouldReset)
+    {
+        delay(150);
+    }
 }
 
 void loop()
 {
-    // Loop through from one side to the other of leds
-    // NOTE:
-    // - row 1 is the final shiftRegister (4) to update.
-
     for (int i = 0; i < 8; i++)
     {
-        shiftRegisterAnimation(i, i == 8);
+        shiftRegisterAnimation(i, false);
     }
 
-    for (int i = 8; i > 0; i--)
+    for (int i = 7; i > 0; i--)
     {
-        shiftRegisterAnimation(i, i == 8);
+        shiftRegisterAnimation(i, i == 7);
     }
 
     // Example usage: update shift registers with specific data
