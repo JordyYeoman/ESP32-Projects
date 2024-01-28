@@ -1,3 +1,9 @@
+#include <LiquidCrystal.h>
+// initialize the library by associating any needed LCD interface pin
+// with the arduino pin number it is connected to
+const int rs = 13, en = 12, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
 int latchPin = 10; // (11) ST_CP [RCK] on 74HC595
 int clockPin = 11; // (9) SH_CP [SCK] on 74HC595
 int dataPin = 9;   // (12) DS [S1] on 74HC595
@@ -7,8 +13,13 @@ int binaryNumShiftRegister2 = 0b00000000;
 int binaryNumShiftRegister3 = 0b00000000;
 int binaryNumShiftRegister4 = 0b00000000;
 int resetBinaryNum = 0b00000000;
-// Game Logic
-bool newGame = false;
+
+// Game state
+unsigned long time;
+unsigned long reactionTime;
+bool buttonPressed;
+bool newGame;
+bool gameInProgress = false;
 
 void setup()
 {
@@ -17,6 +28,9 @@ void setup()
     pinMode(clockPin, OUTPUT);
     pinMode(latchPin, OUTPUT);
     Serial.begin(9600);
+    // set up the LCD's number of columns and rows:
+    lcd.begin(16, 2);
+    lcd.print("New Game");
 }
 
 // Function to send a byte to the shift register (LSB first)
@@ -192,24 +206,46 @@ void checkNewGame()
     }
 }
 
+void gameStartupLogic()
+{
+    if (newGame && !gameInProgress)
+    {
+        gameInProgress = true;
+        lcd.clear();
+        // Delay 3s before game starts
+        lcd.print("Game Starting");
+        delay(500);
+
+        lcd.setCursor(0, 1);
+        lcd.print("3...");
+        delay(1000);
+        lcd.setCursor(0, 1);
+        lcd.print("2...");
+        delay(1000);
+        lcd.setCursor(0, 1);
+        lcd.print("1...");
+        delay(1000);
+        lcd.clear();
+        lcd.print("Game Started");
+        delay(1000);
+        lcd.clear();
+        time = millis();
+        // Turn off new game after initialising, so we avoid entering this loop again
+        newGame = false;
+    }
+}
+
 void loop()
 {
     // Check game buttons
     checkNewGame();
 
-    if (newGame)
-    {
-        // run game logic
-    }
-    else
-    {
-        // Simple animation
-        // loopForwardAndBackWard();
+    gameStartupLogic();
 
-        // Simple off timing animation
-        simpleOffsetStepAnimation();
-        // updateShiftRegisters(0b00000000, 0b00000000, 0b00000000, 0b00000000);
-    }
+    // Simple animation
+    // loopForwardAndBackWard();
 
-    delay(1000);
+    // Simple off timing animation
+    // simpleOffsetStepAnimation();
+    // updateShiftRegisters(0b00000000, 0b00000000, 0b00000000, 0b00000000);
 }
